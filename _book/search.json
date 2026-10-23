@@ -1,0 +1,22 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "clima y educacion",
+    "section": "",
+    "text": "Preface\nThis is a Quarto book.\nTo learn more about Quarto books visit https://quarto.org/docs/books.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "capitulos/introduccion.html",
+    "href": "capitulos/introduccion.html",
+    "title": "1  introduccion",
+    "section": "",
+    "text": "1.1 Mi primer proyecto",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>introduccion</span>"
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+project:
+  type: book
+
+book:
+  title: "clima y educacion"
+  author: "Josselyn Torres, Leydi Jiménez"
+  date: "23/10/2026"
+  chapters:
+    - index.qmd
+    - capitulos/introduccion.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
