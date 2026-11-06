@@ -1,0 +1,465 @@
+---
+title: "Datos y evidencia empírica"
+lang: es
+---
+
+## Descripción de la muestra
+
+La muestra analizada incluye 10.818 estudiantes de 3.º de Bachillerato. La restricción se aplicó estratégicamente para comparar estudiantes de un mismo nivel educativo y mantener mayor homogeneidad cognitiva. Se analizan el puntaje global (`inev`), el puntaje de Matemáticas (`imat`), el sexo, el área del establecimiento y su sostenimiento escolar.
+
+Los días de calor extremo (`dias_calor_extremo`) cuentan los días con temperatura máxima superior a 30 °C dentro de ventanas estrictas anteriores al examen: del 1 de octubre al 19 de noviembre de 2024 para Costa y del 1 de abril al 22 de mayo de 2025 para Sierra. Así, la medición excluye los días posteriores a la evaluación y reduce el riesgo de sesgo de postratamiento. La base corregida cubre Costa y Sierra, por lo que la descripción no representa a la Amazonía ni a la región Insular.
+
+La exposición se asigna a cada provincia usando la celda de NASA POWER más cercana a su centroide. Es, por tanto, una medida territorial aproximada y no una medición de la temperatura experimentada por cada estudiante o dentro de su aula.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| include: false
+
+library(tidyverse)
+library(gtsummary)
+library(ggplot2)
+
+gtsummary::set_gtsummary_theme(list(
+  "style_number-arg:big.mark" = ".",
+  "style_number-arg:decimal.mark" = ","
+))
+
+archivos_base <- c(
+  "base_ce_corregida.rds",
+  file.path("..", "base_ce_corregida.rds")
+)
+archivo_base <- archivos_base[file.exists(archivos_base)][1]
+
+if (is.na(archivo_base)) {
+  stop(
+    "No se encontró base_ce_corregida.rds. Ejecute preparacion_datos.R desde la carpeta del proyecto.",
+    call. = FALSE
+  )
+}
+
+variables_requeridas <- c(
+  "id_prov", "inev", "imat", "regimen", "tp_sexo", "tp_area",
+  "sostenimiento", "dias_calor_extremo"
+)
+
+base_ce <- readRDS(archivo_base) %>%
+  mutate(
+    region = case_when(
+      id_prov %in% c(7L, 8L, 9L, 12L, 13L, 23L, 24L) ~ "Costa",
+      id_prov %in% c(1L, 2L, 3L, 4L, 5L, 6L, 10L, 11L, 17L, 18L) ~ "Sierra",
+      id_prov %in% c(14L, 15L, 16L, 19L, 21L, 22L) ~ "Amazonía",
+      id_prov == 20L ~ "Insular",
+      TRUE ~ NA_character_
+    ),
+    region = factor(
+      region,
+      levels = c("Costa", "Sierra", "Amazonía", "Insular")
+    )
+  )
+
+if (anyNA(base_ce$region)) {
+  stop("Hay códigos provinciales sin correspondencia con una región natural.")
+}
+
+if (!all(variables_requeridas %in% names(base_ce))) {
+  stop("La base corregida no contiene todas las variables requeridas para el análisis.")
+}
+
+base_ce <- base_ce %>%
+  # Excluye explícitamente Amazonía e Insular antes de las tablas y gráficos.
+  filter(region %in% c("Costa", "Sierra")) %>%
+  droplevels() %>%
+  mutate(
+    categoria_calor = case_when(
+      dias_calor_extremo == 0 ~ "0 días",
+      dias_calor_extremo >= 1 & dias_calor_extremo <= 15 ~ "1 a 15 días",
+      dias_calor_extremo >= 16 ~ "16+ días",
+      TRUE ~ NA_character_
+    ),
+    categoria_calor = factor(
+      categoria_calor,
+      levels = c("0 días", "1 a 15 días", "16+ días")
+    )
+  )
+
+if (nrow(base_ce) != 10818) {
+  stop(sprintf("Se esperaban 10.818 observaciones; se encontraron %s.", nrow(base_ce)))
+}
+
+```
+
+## Estadísticas descriptivas
+
+La Tabla 1 describe la nueva muestra de 10.818 estudiantes de Bachillerato en Costa y Sierra. Presenta la media, la desviación estándar y el rango de los puntajes y de los días de calor; para las variables categóricas muestra los conteos y porcentajes. Se excluyeron Amazonía e Insular antes de calcular los resúmenes.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+base_ce %>%
+  select(
+    inev,
+    imat,
+    dias_calor_extremo,
+    tp_sexo,
+    tp_area,
+    sostenimiento,
+    region
+  ) %>%
+  gtsummary::tbl_summary(
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd}); {min}–{max}",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    type = list(dias_calor_extremo ~ "continuous"),
+    digits = list(
+      all_continuous() ~ gtsummary::label_style_number(
+        digits = 1,
+        big.mark = ".",
+        decimal.mark = ","
+      ),
+      all_categorical() ~ c(0, 1)
+    ),
+    label = list(
+      inev ~ "Puntaje global",
+      imat ~ "Puntaje de Matemáticas",
+      dias_calor_extremo ~ "Días con temperatura > 30 °C",
+      tp_sexo ~ "Sexo",
+      tp_area ~ "Área del establecimiento",
+      sostenimiento ~ "Sostenimiento escolar",
+      region ~ "Región natural"
+    ),
+    missing = "ifany",
+    missing_text = "No disponible"
+  ) %>%
+  gtsummary::add_n() %>%
+  gtsummary::modify_header(
+    label ~ "**Variable**",
+    stat_0 ~ "**Resumen**",
+    n ~ "**N**"
+  ) %>%
+  gtsummary::modify_caption(
+    "**Tabla 1. Estadísticas descriptivas de la muestra**"
+  ) %>%
+  gtsummary::bold_labels()
+```
+
+## Lectura de la tabla
+
+La tabla resume exclusivamente la muestra filtrada y la exposición medida antes de la evaluación. En estos datos, los puntajes y la cantidad de días de calor varían entre estudiantes y provincias. Estos son resúmenes descriptivos: por sí solos no muestran que el calor cause cambios en las notas.
+
+Aunque hay 10.818 registros individuales, muchos estudiantes comparten la exposición asignada a su provincia. La exposición también difiere entre regímenes, de modo que las comparaciones simples pueden reflejar otras diferencias entre regiones. Un análisis posterior debe considerar esta estructura y no interpretar los promedios como efectos causales.
+
+## Puntajes promedio por régimen: Costa y Sierra
+
+El Gráfico 1 compara directamente los promedios de las notas globales y de Matemáticas entre Costa y Sierra. La nota global promedio es 693,6 en Costa y 702,2 en Sierra; en Matemáticas, los promedios son prácticamente iguales (699,7 y 699,8, respectivamente). El gráfico de puntos facilita comparar cada promedio y mostrar diferencias pequeñas sin sugerir que sean grandes. La comparación es descriptiva: Costa y Sierra también pueden diferir en otras características, por lo que la figura no demuestra que el clima cause las diferencias observadas.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 6.5
+#| fig-height: 4.5
+#| fig-dpi: 300
+#| out-width: "100%"
+#| fig-align: center
+
+promedios_region <- base_ce %>%
+  select(regimen, inev, imat) %>%
+  pivot_longer(
+    cols = c(inev, imat),
+    names_to = "tipo_nota",
+    values_to = "nota"
+  ) %>%
+  mutate(
+    tipo_nota = recode(
+      tipo_nota,
+      inev = "Nota global",
+      imat = "Matemáticas"
+    )
+  ) %>%
+  group_by(regimen, tipo_nota) %>%
+  summarise(
+    promedio = mean(nota, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    regimen = factor(regimen, levels = c("Costa", "Sierra")),
+    tipo_nota = factor(tipo_nota, levels = c("Nota global", "Matemáticas"))
+  )
+
+posicion_region <- position_dodge(width = 0.35)
+
+ggplot(
+  promedios_region,
+  aes(x = promedio, y = tipo_nota, color = regimen)
+) +
+  geom_line(
+    aes(group = tipo_nota),
+    position = posicion_region,
+    color = "grey65",
+    linewidth = 0.7
+  ) +
+  geom_point(position = posicion_region, size = 3.5) +
+  geom_text(
+    aes(
+      label = formatC(promedio, format = "f", digits = 1, decimal.mark = ","),
+      group = regimen
+    ),
+    position = posicion_region,
+    hjust = -0.3,
+    color = "black",
+    size = 3.5
+  ) +
+  scale_color_manual(
+    values = c("Costa" = "#D28B36", "Sierra" = "#287C74"),
+    name = "Régimen"
+  ) +
+  scale_x_continuous(
+    breaks = seq(680, 710, by = 5),
+    limits = c(680, 710),
+    expand = expansion(mult = c(0, 0.08))
+  ) +
+  labs(
+    title = "Gráfico 1. Puntajes promedio por régimen",
+    x = "Puntaje promedio (eje ampliado de 680 a 710)",
+    y = NULL,
+    caption = "Cada punto representa el promedio de estudiantes de ese régimen. La comparación es descriptiva."
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+En las barras de los gráficos siguientes, **N** indica el número de estudiantes con una nota disponible dentro del grupo correspondiente. No se suma ni modifica el promedio: se incluye para mostrar cuántas observaciones lo respaldan y contextualizar el tamaño de cada grupo. Como varios estudiantes comparten la exposición climática provincial, N no representa el número de observaciones climáticas independientes.
+
+## Promedios de Matemáticas por tipo de colegio
+
+El Gráfico 2 compara la nota promedio de Matemáticas entre tipos de sostenimiento escolar. Las diferencias entre grupos describen brechas observadas; el sostenimiento puede reflejar diferencias de recursos y condiciones, pero no mide directamente la infraestructura ni explica por sí solo las causas de las brechas.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 6.5
+#| fig-height: 4.5
+#| fig-dpi: 300
+#| out-width: "100%"
+#| fig-align: center
+
+promedio_sostenimiento <- base_ce %>%
+  group_by(sostenimiento) %>%
+  summarise(
+    imat_promedio = mean(imat, na.rm = TRUE),
+    n = sum(!is.na(imat)),
+    .groups = "drop"
+  )
+
+ggplot(
+  promedio_sostenimiento,
+  aes(x = sostenimiento, y = imat_promedio, fill = sostenimiento)
+) +
+  geom_col(width = 0.7) +
+  geom_text(
+    aes(
+      label = paste0(
+        formatC(imat_promedio, format = "f", digits = 1, decimal.mark = ","),
+        "\nN = ",
+        format(n, big.mark = ".", decimal.mark = ",")
+      ),
+      y = imat_promedio - 1
+    ),
+    angle = 0,
+    color = "black",
+    fontface = "plain",
+    size = 2.8,
+    lineheight = 0.9,
+    hjust = 0.5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Fiscal" = "#1B6E66",
+      "Fiscomisional" = "#275D8C",
+      "Municipal" = "#9A5A00",
+      "Particular" = "#68438A"
+    ),
+    guide = "none"
+  ) +
+  scale_y_continuous(breaks = seq(690, 710, by = 2)) +
+  coord_cartesian(ylim = c(690, 710)) +
+  labs(
+    title = "Promedio de Matemáticas según sostenimiento",
+    x = "Sostenimiento del colegio",
+    y = "Nota promedio de Matemáticas",
+    caption = "Etiquetas: promedio y N. Eje ampliado de 690 a 710."
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
+```
+
+## Promedios de Matemáticas por categoría de calor
+
+El Gráfico 3 compara el promedio de Matemáticas en las tres categorías. En la nueva base, los promedios son aproximadamente 699,8 puntos para 0 días, 699,2 para 1 a 15 días y 699,9 para 16 o más días. Por tanto, no se observa una caída sostenida a medida que aumenta el calor: las diferencias son pequeñas y el promedio más alto corresponde al grupo de mayor exposición. Además, las dos categorías con calor están formadas por estudiantes de Costa y la categoría de cero días por estudiantes de Sierra; esta comparación mezcla exposición y región, y no permite atribuir las diferencias al calor.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 6.5
+#| fig-height: 4.5
+#| fig-dpi: 300
+#| out-width: "100%"
+#| fig-align: center
+
+promedio_calor <- base_ce %>%
+  group_by(categoria_calor) %>%
+  summarise(
+    imat_promedio = mean(imat, na.rm = TRUE),
+    n = sum(!is.na(imat)),
+    .groups = "drop"
+  )
+
+ggplot(
+  promedio_calor,
+  aes(x = categoria_calor, y = imat_promedio, fill = categoria_calor)
+) +
+  geom_col(width = 0.7) +
+  geom_text(
+    aes(
+      label = paste0(
+        formatC(imat_promedio, format = "f", digits = 1, decimal.mark = ","),
+        "\nN = ",
+        format(n, big.mark = ".", decimal.mark = ",")
+      ),
+      y = imat_promedio - 1
+    ),
+    angle = 0,
+    color = "black",
+    fontface = "plain",
+    size = 2.8,
+    lineheight = 0.9,
+    hjust = 0.5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "0 días" = "#275D8C",
+      "1 a 15 días" = "#9A5A00",
+      "16+ días" = "#1B6E66"
+    ),
+    guide = "none"
+  ) +
+  scale_y_continuous(breaks = seq(690, 710, by = 2)) +
+  coord_cartesian(ylim = c(690, 710)) +
+  labs(
+    title = "Promedio de Matemáticas según días de calor extremo",
+    x = "Días de calor extremo",
+    y = "Nota promedio de Matemáticas",
+    caption = "Etiquetas: promedio y N. Eje ampliado de 690 a 710."
+  ) +
+  theme_minimal()
+```
+
+## Calor y sostenimiento escolar
+
+El Gráfico 4 desglosa los promedios por categoría de calor y sostenimiento. Permite observar si las brechas entre tipos de colegio cambian entre categorías, pero no muestra una caída general de notas a mayor calor ni demuestra una vulnerabilidad distinta por sostenimiento. Las categorías de calor coinciden con regímenes y grupos de provincias distintos, así que las diferencias no pueden atribuirse únicamente a la temperatura.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 6.8
+#| fig-height: 5
+#| fig-dpi: 300
+#| out-width: "100%"
+#| fig-align: center
+
+promedio_calor_sostenimiento <- base_ce %>%
+  group_by(categoria_calor, sostenimiento) %>%
+  summarise(
+    imat_promedio = mean(imat, na.rm = TRUE),
+    n = sum(!is.na(imat)),
+    .groups = "drop"
+  )
+
+posicion_barras <- position_dodge(width = 0.85)
+
+ggplot(
+  promedio_calor_sostenimiento,
+  aes(x = categoria_calor, y = imat_promedio, fill = sostenimiento)
+) +
+  geom_col(position = posicion_barras, width = 0.8) +
+  geom_text(
+    aes(
+      label = paste0(
+        formatC(imat_promedio, format = "f", digits = 1, decimal.mark = ","),
+        "\nN = ",
+        format(n, big.mark = ".", decimal.mark = ",")
+      ),
+      group = sostenimiento,
+      y = imat_promedio - 1
+    ),
+    position = posicion_barras,
+    angle = 0,
+    color = "black",
+    fontface = "plain",
+    size = 2.1,
+    lineheight = 0.85,
+    hjust = 0.5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Fiscal" = "#1B6E66",
+      "Fiscomisional" = "#275D8C",
+      "Municipal" = "#9A5A00",
+      "Particular" = "#68438A"
+    ),
+    name = "Sostenimiento"
+  ) +
+  scale_y_continuous(breaks = seq(690, 710, by = 2)) +
+  coord_cartesian(ylim = c(690, 710)) +
+  labs(
+    title = "Promedio de Matemáticas por calor y sostenimiento",
+    x = "Días de calor extremo",
+    y = "Nota promedio de Matemáticas",
+    caption = "Etiquetas: promedio y N. Eje ampliado de 690 a 710."
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Correlación entre puntajes y calor
+
+La tabla presenta correlaciones de Pearson entre la nota global, Matemáticas y los días de calor. La relación entre Matemáticas y calor es prácticamente nula en esta muestra (r = 0,021); la correlación no ajusta por región ni por otras características y no demuestra un efecto causal. Sirve como punto de partida para avanzar a un modelo OLS que incorpore controles, pero existe una limitación importante: todos los casos de Sierra están en la categoría de cero días y los casos con días de calor son de Costa. Al no haber categorías de exposición compartidas entre ambos regímenes, una estimación no puede separar con claridad la asociación del calor de las diferencias entre regiones. Esta limitación debe tratarse antes de dar una interpretación causal al modelo.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+variables_correlacion <- base_ce %>%
+  select(inev, imat, dias_calor_extremo) %>%
+  rename(
+    `Nota Global` = inev,
+    Matemáticas = imat,
+    `Días de Calor (>30°C)` = dias_calor_extremo
+  )
+
+matriz_correlacion <- cor(
+  variables_correlacion,
+  use = "pairwise.complete.obs",
+  method = "pearson"
+) %>%
+  round(3)
+
+knitr::kable(
+  matriz_correlacion,
+  caption = "Correlaciones de Pearson",
+  digits = 3,
+  format.args = list(decimal.mark = ",")
+)
+```

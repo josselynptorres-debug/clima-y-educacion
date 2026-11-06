@@ -3,5 +3,20 @@ title: "introduccion"
 format: html
 ---
 
-Mi primer proyecto
----
+# Introducción
+
+## Contexto de estrés térmico
+
+La exposición a temperaturas elevadas puede afectar la atención y otros procesos cognitivos relevantes para el aprendizaje y el desempeño en evaluaciones. La evidencia experimental y observacional documenta efectos del calor sobre la cognición y los resultados educativos, incluidos puntajes en pruebas de alto impacto [@hancock2003effects; @lan2022cognitive; @park2020heat; @park2022hot]. Estos mecanismos hacen pertinente estudiar el calor como una condición ambiental que podría incidir en el capital humano, aunque la temperatura del aire no equivale por sí sola a una medición directa del estrés térmico individual [@graff2018temperature].
+
+## Brecha de conocimiento
+
+Estudios en distintos contextos han encontrado asociaciones entre temperatura y desempeño educativo, y señalan que sus efectos pueden variar entre grupos y condiciones socioeconómicas [@garg2020temperature; @hoffmann2023unequal; @arceo2024extreme]. Sin embargo, esos resultados no determinan por sí mismos la magnitud de la penalización asociada con el calor en los puntajes de la evaluación nacional en Ecuador. Es necesario estimarla con microdatos educativos y medidas climáticas vinculadas al territorio, sin asumir que las magnitudes observadas en otros países se trasladan directamente al contexto ecuatoriano.
+
+## Objetivos
+
+El objetivo principal de este estudio es cuantificar la penalización en los puntajes de la prueba nacional asociada con la exposición a calor extremo. Para ello, se propone vincular los microdatos de desempeño estudiantil con registros mensuales de temperatura del aire a dos metros (T2M) de NASA POWER y estimar cómo varían los puntajes según la exposición térmica del lugar correspondiente. Como objetivo complementario, se examinará si la magnitud de esa asociación difiere entre grupos o territorios, de acuerdo con las variables disponibles en los microdatos.
+
+## Novedad y contribución
+
+La contribución del estudio consiste en integrar resultados educativos a nivel de estudiante con información climática espacial de NASA POWER para analizar una pregunta concreta de economía de la educación en Ecuador. Esta estrategia permite evaluar la distribución territorial de la penalización y explorar qué grupos podrían estar más expuestos a sus consecuencias. La medida representa exposición ambiental estimada a partir de temperatura del aire; por tanto, no debe interpretarse como una medición individual de estrés térmico ni, por sí sola, como evidencia causal.

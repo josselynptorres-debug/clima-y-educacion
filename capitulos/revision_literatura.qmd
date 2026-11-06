@@ -1,0 +1,20 @@
+---
+title: "revision_literatura"
+format: html
+---
+
+### 1. El Estrés Térmico y su Impacto Fisiológico en el Aprendizaje
+
+La comprensión del impacto climático en la educación requiere analizar la respuesta biológica del ser humano ante temperaturas adversas. En este sentido, la fundamentación teórica se sostiene en la Teoría del Estrés Térmico, la cual postula que la exposición prolongada al calor extremo obliga al organismo a priorizar y desviar recursos metabólicos y cardiovasculares hacia la termorregulación, mermando el flujo sanguíneo cerebral [@hancock2003effects]. Este agotamiento fisiológico impacta directamente las funciones ejecutivas, la memoria y la capacidad de cálculo [@hancock2003effects; @lan2022thermal].
+
+Asimismo, @gao2014impact vinculan esta alteración biológica con la Teoría de la Carga Cognitiva de Sweller (1988), demostrando que la memoria de trabajo posee una capacidad limitada que se satura rápidamente ante estímulos ambientales incómodos. De hecho, los daños en el procesamiento neurológico y en la atención pueden ocurrir de forma "silenciosa" e imperceptible, penalizando a los estudiantes incluso en rangos térmicos moderados (24–28°C) [@lan2022cognitive]. Como advierten @bae2022effect, la sudoración y la falta de ventilación en aulas reales generan un disconfort corporal que desvía drásticamente el foco de atención del material académico.
+
+En este contexto, la carencia de infraestructura escolar, particularmente de aire acondicionado, no es solo una limitante técnica, sino un multiplicador de la desigualdad regional que invisibiliza el daño cognitivo [@wargocki2019relationships; @zheng2021impacts]. En economías en desarrollo, estas variaciones térmicas actúan como un multiplicador de la pobreza educativa, castigando severamente a estudiantes en zonas sin recursos [@garg2020temperature].
+
+### 2. Evidencia Empírica y Potencialidades Metodológicas
+
+La literatura reciente ha avanzado en la cuantificación de este fenómeno mediante modelos causales avanzados. @graff2018temperature validaron empíricamente el uso de modelos econométricos de Diferencias en Diferencias (DiD) para cruzar registros geográficos de clima con bases educativas, aislando la variación espacial y demostrando un impacto negativo directo del clima en el desempeño. Este enfoque comparativo resulta altamente pertinente para evaluar las asimetrías térmicas territoriales, como lo demostraron @hoffmann2023unequal en su análisis sobre los efectos desiguales de la temperatura en las pruebas estandarizadas de Colombia, sentando un precedente directo para estudios en la región andina.
+
+La robustez de estos modelos recae en una estructuración precisa de las variables. Autores como @park2020heat y @ma2023impact justifican la necesidad de medir no solo el clima durante la evaluación, sino contabilizar los "días con temperaturas extremas en el mes previo al examen". Este enfoque captura el efecto acumulativo que interrumpe la formación del capital humano. Adicionalmente, el registro del clima exacto del "día del examen" permite identificar sesgos de medición que devalúan artificialmente la calificación por el choque térmico inmediato [@chen2020effects; @park2022hot].
+
+Finalmente, para garantizar la validez econométrica, es mandatorio controlar el modelo considerando características del entorno del estudiante, como el nivel de ingresos familiares y la clasificación urbana o rural de la zona [@cho2017effects]. De igual manera, se ha evidenciado que la resiliencia cognitiva frente a la carga térmica varía según el dominio del conocimiento, siendo las áreas de matemáticas usualmente más vulnerables que las de lenguaje, lo que justifica la segmentación de la variable dependiente [@porrassalazar2018association].
